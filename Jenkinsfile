@@ -38,7 +38,7 @@ pipeline {
                 }
             }
         }
-        stage('Deploy on k8s Cluster') {
+        stage('Deploy on ArgoCD') {
             steps {
                 script { 
                 	
