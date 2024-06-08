@@ -3,9 +3,13 @@ pipeline {
     agent any
     
     environment {
-        dockerHubCredentialsID	            = 'DockerHub'  		    			      // DockerHub credentials ID.
-        imageName   		            = 'alikhames/nti-python-app'     			// DockerHub repo/image name.
-	    k8sCredentialsID	            = 'kubernetes'	    				     // KubeConfig credentials ID.    
+            dockerHubCredentialsID	            = 'DockerHub'  		    			      // DockerHub credentials ID.
+            imageName   		            = 'alikhames/nti-python-app'     			     // DockerHub repo/image name.
+	    k8sCredentialsID	                    = 'kubernetes'	    				     // KubeConfig credentials ID.   
+	    gitRepoName 			    = 'Nti-Jenkins-Lab'
+            gitUserName 			    = 'Alikhamed'
+	    gitUserEmail                            = 'Alikhames566@gmail.com'
+	    githubToken                             = 'github-token'
     }
     
     stages {       
@@ -33,7 +37,7 @@ pipeline {
             steps {
                 script { 
                 	dir('k8s') {
-				        editNewImage("${imageName}")
+				editNewImage("${githubToken}", "${imageName}", "${gitUserEmail}", "${gitUserName}", "${gitRepoName}")
 			}
                 }
             }
