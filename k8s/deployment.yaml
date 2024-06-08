@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: python-app
-        image: alikhames/nti-python-app:7
+        image: ${imageName}:${BUILD_NUMBER}
         ports:
         - containerPort: 5000
         
