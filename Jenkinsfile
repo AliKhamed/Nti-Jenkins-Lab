@@ -1,4 +1,4 @@
-@Library('Jenkins-Shared-Library')_
+@Library('Argocd-Shared-Library')_
 pipeline {
     agent any
     
@@ -41,9 +41,9 @@ pipeline {
         stage('Deploy on k8s Cluster') {
             steps {
                 script { 
-                	dir('k8s') {
-				         deployOnKubernetes("${k8sCredentialsID}")
-                    }
+                	
+				deployOnArgoCD("${k8sCredentialsID}")
+                    
                 }
             }
         }
