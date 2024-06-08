@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: python-app
-        image: ${imageName}:${BUILD_NUMBER}
+        image: alikhames/argocd-python-app:12
         ports:
         - containerPort: 5000
         
