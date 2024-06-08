@@ -1,9 +1,9 @@
-# Jenkins Project Diagram Overview
+# Jenkins and ArgoCD CI/CD Pipeline
 
-![](https://github.com/AliKhamed/Nti-Jenkins-Lab/blob/main/screenshots/Jenkins-project-diagram.png)
+![](https://github.com/AliKhamed/Nti-Jenkins-Lab/blob/main/screenshots/CICD-pipeline-using-Argo-CD-Image-Updater-and-Jenkins.png)
 
-## Shared Libirary Repository
-https://github.com/AliKhamed/shared_library.git
+This project demonstrates a CI/CD pipeline using Jenkins to build, push Docker images, and update Kubernetes configurations, and ArgoCD to deploy the application on a Minikube cluster.
+
 
 ## Pipeline Overview
 
@@ -14,16 +14,43 @@ The Jenkins pipeline follows these stages to build, push, edite and deploy Docke
 2. **Push Docker Image To DockerHub:** Push docker image to docker hub.
 
 3. **Edit new image in deployment.yaml file:** Edit new image in deployment.yaml file.
+   
+4. **Deploy with ArgoCD to minikube cluster:** Use ArgoCD to synchronize and deploy the updated configuration from the GitHub repository to the Minikube cluster.
 
-4. **Deploy to k8s:**  Deploy image to k8s minikube cluster.
+## Prerequisites
+
+    1. Jenkins installed and configured.
+    2. Docker installed on Jenkins agents.
+    3. Minikube installed and configured.
+    4. ArgoCD installed and configured on the Minikube cluster.
+    5. DockerHub account and credentials.
+
+## To install and configured ArgoCD on the Minikube cluster:
+[repo link](https://github.com/AliKhamed/ivolve_labs/tree/main/oc/lab11)
+
+## Shared Libirary Repository
+[repo link](https://github.com/AliKhamed/minikube_shared_library/tree/main)
 
 
-## Pipeline Steps
-
-### Build Docker Image:
-
+## Pipeline Stages
 ```
- stage('Build Docker image from Dockerfile in GitHub') {
+@Library('Argocd-Shared-Library')_
+pipeline {
+    agent any
+    
+    environment {
+            dockerHubCredentialsID	            = 'DockerHub'  		    			      // DockerHub credentials ID.
+            imageName   		            = 'alikhames/argocd-python-app'     			     // DockerHub repo/image name.
+	    k8sCredentialsID	                    = 'kubernetes'	    				     // KubeConfig credentials ID.   
+	    gitRepoName 			    = 'Nti-Jenkins-Lab'
+            gitUserName 			    = 'Alikhamed'
+	    gitUserEmail                            = 'Alikhames566@gmail.com'
+	    githubToken                             = 'github-token'
+    }
+    
+    stages {       
+       
+        stage('Build Docker image from Dockerfile in GitHub') {
             steps {
                 script {
                  	
@@ -32,14 +59,7 @@ The Jenkins pipeline follows these stages to build, push, edite and deploy Docke
                 }
             }
         }
-```
-
-
-
-### Push Docker Image To DockerHub:
-
-```
-stage('Push image to Docker hub') {
+        stage('Push image to Docker hub') {
             steps {
                 script {
                  	
@@ -49,41 +69,27 @@ stage('Push image to Docker hub') {
             }
         }
 
-```
-
-### Edit new image in deployment.yaml file:
-
-```
-stage('Edit new image in deployment.yaml file') {
+        stage('Edit new image in deployment.yaml file') {
             steps {
                 script { 
-                	dir('k8s') {
-				        editNewImage("${imageName}")
-                    	}
+                	
+			 editNewImage("${githubToken}", "${imageName}", "${gitUserEmail}", "${gitUserName}", "${gitRepoName}")
+			
                 }
             }
         }
-```
-### Deploy to k8s:
-
-```
-stage('Deploy on k8s Cluster') {
+        stage('Deploy on ArgoCD') {
             steps {
                 script { 
-                	dir('k8s') {
-				         deployOnKubernetes("${k8sCredentialsID}", "${branchName}")
-                    }
+                	
+				deployOnArgoCD("${k8sCredentialsID}")
+                    
                 }
             }
         }
+    }
 
-```
-
-
-### Post-Build Actions
-In case of pipeline success or failure, the following messages will be displayed:
-```
- post {
+    post {
         always {
             echo "${JOB_NAME}-${BUILD_NUMBER} pipeline always succeeded"
         }
@@ -94,21 +100,21 @@ In case of pipeline success or failure, the following messages will be displayed
             echo "${JOB_NAME}-${BUILD_NUMBER} pipeline failed"
         }
     }
+}
 ```
-----
-### Successfully Run  Multibranch Pipeline
-![](https://github.com/AliKhamed/Nti-Jenkins-Lab/blob/main/screenshots/mul.png)
+
+### Successfully Run Pipeline
+![](https://github.com/AliKhamed/Nti-Jenkins-Lab/blob/main/screenshots/jenkins1.png)
 
 
 
-### Successfully Run Test Branch Pipeline On k8s minikube cluster
-![](https://github.com/AliKhamed/Nti-Jenkins-Lab/blob/main/screenshots/test1.png)
-![](https://github.com/AliKhamed/Nti-Jenkins-Lab/blob/main/screenshots/test2.png)
+### After Run Pipeline Check ArgoCD Application
+![](https://github.com/AliKhamed/Nti-Jenkins-Lab/blob/main/screenshots/argocd1.png)
 
-### Successfully Run Development Branch Pipeline On k8s minikube cluster
-![](https://github.com/AliKhamed/Nti-Jenkins-Lab/blob/main/screenshots/dev1.png)
-![](https://github.com/AliKhamed/Nti-Jenkins-Lab/blob/main/screenshots/dev2.png)
 
-### Successfully Run Production Branch Pipeline On k8s minikube cluster
-![](https://github.com/AliKhamed/Nti-Jenkins-Lab/blob/main/screenshots/prod1.png)
-![](https://github.com/AliKhamed/Nti-Jenkins-Lab/blob/main/screenshots/prod2.png)
+### Check your application
+![](https://github.com/AliKhamed/Nti-Jenkins-Lab/blob/main/screenshots/portforward.png)
+![](https://github.com/AliKhamed/Nti-Jenkins-Lab/blob/main/screenshots/app2.png)
+![](https://github.com/AliKhamed/Nti-Jenkins-Lab/blob/main/screenshots/app1.png)
+
+
